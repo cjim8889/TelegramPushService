@@ -77,6 +77,7 @@ namespace TelegramPushService.Controllers
 
             if (state)
             {
+                await databaseService.SetValidationStatusAsync(publisher.Id, true);
                 return Accepted(new { message = "Validated" });
             }
 

@@ -35,9 +35,6 @@ namespace TelegramPushService.Controllers
             await mqService.PushMessage(message, publisher.Subscribers);
 
             return Accepted(new { message="Success" });
-
         }
-
-
     }
 }

@@ -9,6 +9,12 @@ namespace TelegramPushService.Models
 {
     public class Publisher
     {
+
+        public Publisher()
+        {
+            Validated = false;
+        }
+
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
@@ -19,5 +25,8 @@ namespace TelegramPushService.Models
 
         [BsonElement("Subscribers")]
         public List<int> Subscribers { get; set; }
+
+        [BsonElement("Validated")]
+        public bool Validated { get; set; }
     }
 }

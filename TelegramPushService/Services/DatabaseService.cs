@@ -45,5 +45,14 @@ namespace TelegramPushService.Services
             return await databaseContext.Publishers.UpdateOneAsync(filter, update);
         }
 
+        public async Task SetValidationStatusAsync(string publisherId, bool status)
+        {
+            var filter = Builders<Publisher>.Filter.Eq("Id", publisherId);
+            var update = Builders<Publisher>.Update.Set("Validated", status);
+
+            await databaseContext.Publishers.UpdateOneAsync(filter, update);
+        }
+
+
     }
 }
