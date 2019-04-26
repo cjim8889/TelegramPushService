@@ -37,9 +37,9 @@ namespace TelegramPushService.Services
             return await databaseContext.Publishers.Find(publisher => publisher.Token == token).FirstOrDefaultAsync();
         }
 
-        public async Task<UpdateResult> AddNewSubscriberAsync(string publisherToken, int subsriberId)
+        public async Task<UpdateResult> AddNewSubscriberAsync(string publisherId, int subsriberId)
         {
-            var filter = Builders<Publisher>.Filter.Eq("Token", publisherToken);
+            var filter = Builders<Publisher>.Filter.Eq("Id", publisherId);
             var update = Builders<Publisher>.Update.Push<int>("Subscribers", subsriberId);
 
             return await databaseContext.Publishers.UpdateOneAsync(filter, update);

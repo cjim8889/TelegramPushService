@@ -37,15 +37,15 @@ namespace TelegramPushService.Controllers
             return publisher;
         }
 
-        [HttpGet("insert")]
-        public async Task<ActionResult> InsertSubscriber(string publisherToken, int subsriberId)
-        {
-            var result = await databaseService.AddNewSubscriberAsync(publisherToken, subsriberId);
+        //[HttpGet("insert")]
+        //public async Task<ActionResult> InsertSubscriber(string publisherToken, int subsriberId)
+        //{
+        //    var result = await databaseService.AddNewSubscriberAsync(publisherToken, subsriberId);
 
-            return CreatedAtAction("InsertSubscriber", new { IsAcknowledged=result.IsAcknowledged });
-        }
+        //    return CreatedAtAction("InsertSubscriber", new { IsAcknowledged=result.IsAcknowledged });
+        //}
 
-        [HttpGet("authenticate")]
+        [HttpGet("reqValidation")]
         public async Task<ActionResult> Authenticate(string publisherToken, int subsriberId)
         {
             var publisher = await databaseService.GetPublisherByTokenAsync(publisherToken);
@@ -56,7 +56,7 @@ namespace TelegramPushService.Controllers
             }
 
             var challengeCode = authService.GenerateChallengeCode();
-            authService.AddAuth(publisher.Id, challengeCode);
+            authService.AddAuth(publisher.Id, challengeCode, subsriberId);
             await mqService.PushChallengeMessage(challengeCode, subsriberId);
 
             return Accepted(new { message = "Challenge Code Sent" });
@@ -77,6 +77,10 @@ namespace TelegramPushService.Controllers
 
             if (state)
             {
+
+                var subscriberId = authService.GetSubsriberId(publisher.Id);
+
+                await databaseService.AddNewSubscriberAsync(publisher.Id, subscriberId);
                 await databaseService.SetValidationStatusAsync(publisher.Id, true);
                 return Accepted(new { message = "Validated" });
             }

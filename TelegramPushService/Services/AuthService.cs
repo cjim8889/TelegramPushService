@@ -9,26 +9,36 @@ namespace TelegramPushService.Services
     {
 
 
-        private Dictionary<string, string> authTable;
+        private Dictionary<string, (string, int)> authTable;
         public AuthService()
         {
-            authTable = new Dictionary<string, string>();
+            authTable = new Dictionary<string, (string, int)>();
         }
 
 
-        public void AddAuth(string id, string challengeCode)
+        public void AddAuth(string id, string challengeCode, int subsriberId)
         {
-            authTable.Add(id, challengeCode);
+            authTable.Add(id, (challengeCode, subsriberId));
         }
 
         public string GetChallengeCode(string id)
         {
-            return authTable.GetValueOrDefault(id);
+            return authTable.GetValueOrDefault(id).Item1;
+        }
+
+        public int GetSubsriberId(string id)
+        {
+            return authTable.GetValueOrDefault(id).Item2;
         }
 
         public bool Authenticate(string id, string key)
         {
             return GetChallengeCode(id) == key;
+        }
+
+        public void Remove(string id)
+        {
+            authTable.Remove(id);
         }
 
         public string GenerateChallengeCode()
