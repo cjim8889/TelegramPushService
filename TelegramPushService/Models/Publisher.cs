@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Security.Cryptography;
 
 namespace TelegramPushService.Models
 {
@@ -13,15 +12,30 @@ namespace TelegramPushService.Models
         public Publisher()
         {
             Validated = false;
+            Subscribers = new List<int>();
+
+            using (RandomNumberGenerator rng = new RNGCryptoServiceProvider())
+            {
+                byte[] adminTokenData = new byte[32];
+                byte[] pushTokenData = new byte[32];
+
+                rng.GetBytes(adminTokenData);
+                rng.GetBytes(pushTokenData);
+
+                AdminToken = Convert.ToBase64String(adminTokenData);
+                PushToken = Convert.ToBase64String(pushTokenData);
+            }
         }
 
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("Token")]
-        public string Token { get; set; }
+        [BsonElement("PushToken")]
+        public string PushToken { get; set; }
 
+        [BsonElement("AdminToken")]
+        public string AdminToken { get; set; }
 
         [BsonElement("Subscribers")]
         public List<int> Subscribers { get; set; }

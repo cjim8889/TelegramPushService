@@ -23,9 +23,9 @@ namespace TelegramPushService.Controllers
 
         [HttpGet]
 
-        public async Task<ActionResult> PushMessage([FromQuery(Name = "p")] string publisherToken, [FromQuery(Name = "m")] string message)
+        public async Task<ActionResult> PushMessage([FromQuery(Name = "t")] string pushToken, [FromQuery(Name = "m")] string message)
         {
-            var publisher = await databaseService.GetPublisherByTokenAsync(publisherToken);
+            var publisher = await databaseService.GetPublisherByPushTokenAsync(pushToken);
 
             if (publisher == null)
             {

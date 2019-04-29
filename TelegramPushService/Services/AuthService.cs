@@ -16,31 +16,35 @@ namespace TelegramPushService.Services
         }
 
 
-        public void AddAuth(string id, string challengeCode, int subsriberId)
+        public void AddAuth(string adminToken, string challengeCode, int subsriberId)
         {
-            authTable.Add(id, (challengeCode, subsriberId));
+            authTable.Add(adminToken, (challengeCode, subsriberId));
         }
 
-        public string GetChallengeCode(string id)
+        public string GetChallengeCode(string adminToken)
         {
-            return authTable.GetValueOrDefault(id).Item1;
+            return authTable.GetValueOrDefault(adminToken).Item1;
         }
 
-        public int GetSubsriberId(string id)
+        public int GetSubsriberId(string adminToken)
         {
-            return authTable.GetValueOrDefault(id).Item2;
+            return authTable.GetValueOrDefault(adminToken).Item2;
         }
 
-        public bool Authenticate(string id, string key)
+        public bool Authenticate(string adminToken, string challengeToken)
         {
-            return GetChallengeCode(id) == key;
+            return GetChallengeCode(adminToken) == challengeToken;
         }
 
-        public void Remove(string id)
+        public void Remove(string adminToken)
         {
-            authTable.Remove(id);
+            authTable.Remove(adminToken);
         }
 
+        public bool ContainsPublisher(string adminToken)
+        {
+            return authTable.ContainsKey(adminToken);
+        }
         public string GenerateChallengeCode()
         {
             var random = new Random();

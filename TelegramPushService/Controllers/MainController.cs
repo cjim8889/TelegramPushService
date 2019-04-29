@@ -37,55 +37,52 @@ namespace TelegramPushService.Controllers
             return publisher;
         }
 
-        //[HttpGet("insert")]
-        //public async Task<ActionResult> InsertSubscriber(string publisherToken, int subsriberId)
-        //{
-        //    var result = await databaseService.AddNewSubscriberAsync(publisherToken, subsriberId);
-
-        //    return CreatedAtAction("InsertSubscriber", new { IsAcknowledged=result.IsAcknowledged });
-        //}
-
-        [HttpGet("reqValidation")]
-        public async Task<ActionResult> Authenticate(string publisherToken, int subsriberId)
+        [HttpGet("subsriber/insert")]
+        public async Task<ActionResult> InsertSubsriber(string adminToken, int subsriberId)
         {
-            var publisher = await databaseService.GetPublisherByTokenAsync(publisherToken);
+            if (await databaseService.IsAdminTokenValid(adminToken))
+            {
+                var challengeCode = authService.GenerateChallengeCode();
+                authService.AddAuth(adminToken, challengeCode, subsriberId);
+                await mqService.PushChallengeMessage(challengeCode, subsriberId);
 
-            if (publisher == null)
+                return Accepted(new { message = "Challenge Code Sent" });
+            }
+
+            return NotFound();
+            
+        }
+
+        [HttpGet("subsriber/validate")]
+
+        public async Task<ActionResult> Validate(string adminToken, string challengeCode)
+        {
+            if (!authService.ContainsPublisher(adminToken))
             {
                 return NotFound();
             }
 
-            var challengeCode = authService.GenerateChallengeCode();
-            authService.AddAuth(publisher.Id, challengeCode, subsriberId);
-            await mqService.PushChallengeMessage(challengeCode, subsriberId);
+            if (authService.Authenticate(adminToken, challengeCode))
+            {
 
-            return Accepted(new { message = "Challenge Code Sent" });
+                var subscriberId = authService.GetSubsriberId(adminToken);
+
+                await databaseService.AddNewSubscriberAsync(adminToken, subscriberId);
+
+                authService.Remove(adminToken);
+
+                return Accepted(new { message = "Validated", subscriberId });
+            }
+
+            return NotFound();
         }
 
-        [HttpGet("validate")]
-
-        public async Task<ActionResult> Validate(string publisherToken, string challengeCode)
+        [HttpGet("subsriber/remove")]
+        public async Task<ActionResult> RemoveSubsriber(string adminToken, int subsriberId)
         {
-            var publisher = await databaseService.GetPublisherByTokenAsync(publisherToken);
-
-            if (publisher == null)
-            {
-                return NotFound();
-            }
-
-            var state = authService.Authenticate(publisher.Id, challengeCode);
-
-            if (state)
-            {
-
-                var subscriberId = authService.GetSubsriberId(publisher.Id);
-
-                await databaseService.AddNewSubscriberAsync(publisher.Id, subscriberId);
-                await databaseService.SetValidationStatusAsync(publisher.Id, true);
-                return Accepted(new { message = "Validated" });
-            }
-
-            return BadRequest();
+            await databaseService.RemoveSubsriberAsync(adminToken, subsriberId);
+            return Accepted();
         }
+
     }
 }
